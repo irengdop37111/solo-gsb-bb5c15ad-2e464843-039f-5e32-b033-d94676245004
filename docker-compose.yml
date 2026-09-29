@@ -1,0 +1,26 @@
+services:
+  custody-service:
+    build: .
+    image: sample-custody:latest
+    container_name: sample-custody
+    ports:
+      - "8080:8080"
+    environment:
+      # 数据库文件位于命名卷中，容器重建后数据保留
+      COC_DB_PATH: /data/custody.db
+      # 首次启动写入演示数据；置 0 可得到空库
+      COC_SEED_DEMO: "1"
+      COC_HOST: 0.0.0.0
+      COC_PORT: "8080"
+    volumes:
+      - custody-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:8080/health',timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  custody-data:
